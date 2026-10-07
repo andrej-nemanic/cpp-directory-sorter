@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <vector>
 #include <string>
+#include <algorithm>
 #include <iomanip>
 
 using namespace std;
@@ -12,7 +13,6 @@ struct FileRecord {
     long long size;
 };
 
-// ... (formatSize remains the same) ...
 string formatSize(long long bytes) {
     constexpr double KB = 1024.0;
     constexpr double MB = KB * 1024.0;
@@ -27,6 +27,33 @@ string formatSize(long long bytes) {
     else                  out << bytes << " B ";
 
     return out.str();
+}
+
+// Quick Sort Partition function (Descending Order)
+int partition(std::vector<FileRecord>& arr, int low, int high) {
+    long long pivot = arr[high].size;
+    int i = (low - 1);
+
+    for (int j = low; j <= high - 1; j++) {
+        // Sort descending by looking for elements larger than the pivot
+        if (arr[j].size > pivot) {
+            i++;
+            std::swap(arr[i], arr[j]);
+        }
+    }
+    std::swap(arr[i + 1], arr[high]);
+    return (i + 1);
+}
+
+// Recursive Quick Sort function
+void quickSort(std::vector<FileRecord>& arr, int low, int high) {
+    if (low < high) {
+        int pi = partition(arr, low, high);
+        
+        // Separately sort elements before and after partition
+        quickSort(arr, low, pi - 1);
+        quickSort(arr, pi + 1, high);
+    }
 }
 
 int main(int argc, char* argv[]) {
@@ -61,6 +88,23 @@ int main(int argc, char* argv[]) {
         std::cerr << "Scan interrupted by system error: " << e.what() << "\n";
     }
 
-    std::cout << "Found " << files.size() << " files.\n";
+    // Call the custom Quick Sort
+    if (!files.empty()) {
+        int n = files.size();
+        quickSort(files, 0, n - 1);
+    }
+
+    // Output the top 5 (or fewer, if the directory has fewer files)
+    int fileCount = files.size();
+    int limit = std::min(5, fileCount);
+    
+    std::cout << "\nTop " << limit << " largest files:\n";
+    std::cout << std::string(60, '-') << "\n";
+
+    for (int i = 0; i < limit; ++i) {
+        std::cout << std::left << std::setw(12) << formatSize(files[i].size) 
+                  << files[i].path.string() << "\n";
+    }
+
     return 0;
 }
