@@ -12,6 +12,7 @@ struct FileRecord {
     long long size;
 };
 
+// ... (formatSize remains the same) ...
 string formatSize(long long bytes) {
     constexpr double KB = 1024.0;
     constexpr double MB = KB * 1024.0;
@@ -39,17 +40,25 @@ int main(int argc, char* argv[]) {
 
     std::cout << "Scanning " << targetDir << "...\n";
 
-    // Basic iteration without error handling
-    for (auto it = fs::recursive_directory_iterator(targetDir); 
-         it != fs::recursive_directory_iterator(); 
-         ++it) {
-        if (fs::is_regular_file(it->status())) {
-            std::error_code ec;
-            long long size = fs::file_size(it->path(), ec);
-            if (!ec) {
-                files.push_back({it->path(), size});
-            }
+    auto options = fs::directory_options::skip_permission_denied;
+    
+    try {
+        for (auto it = fs::recursive_directory_iterator(targetDir, options); 
+             it != fs::recursive_directory_iterator(); 
+             ++it) {
+            try {
+                if (fs::is_regular_file(it->status())) {
+                    std::error_code ec;
+                    long long size = fs::file_size(it->path(), ec);
+                    
+                    if (!ec) {
+                        files.push_back({it->path(), size});
+                    }
+                }
+            } catch (const fs::filesystem_error&) {}
         }
+    } catch (const std::exception& e) {
+        std::cerr << "Scan interrupted by system error: " << e.what() << "\n";
     }
 
     std::cout << "Found " << files.size() << " files.\n";
