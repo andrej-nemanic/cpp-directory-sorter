@@ -3,7 +3,6 @@
 #include <vector>
 #include <string>
 #include <iomanip>
-#include <algorithm> // Added for std::swap
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -13,6 +12,7 @@ struct FileRecord {
     long long size;
 };
 
+// ... (formatSize remains the same) ...
 string formatSize(long long bytes) {
     constexpr double KB = 1024.0;
     constexpr double MB = KB * 1024.0;
@@ -29,30 +29,38 @@ string formatSize(long long bytes) {
     return out.str();
 }
 
-int partition(std::vector<FileRecord>& arr, int low, int high) {
-    long long pivot = arr[high].size;
-    int i = (low - 1);
-
-    for (int j = low; j <= high - 1; j++) {
-        if (arr[j].size > pivot) {
-            i++;
-            std::swap(arr[i], arr[j]);
-        }
-    }
-    std::swap(arr[i + 1], arr[high]);
-    return (i + 1);
-}
-
-void quickSort(std::vector<FileRecord>& arr, int low, int high) {
-    if (low < high) {
-        int pi = partition(arr, low, high);
-        
-        quickSort(arr, low, pi - 1);
-        quickSort(arr, pi + 1, high);
-    }
-}
-
 int main(int argc, char* argv[]) {
-    std::cout << "Algorithm branch: Quick Sort implemented.\n";
+    fs::path targetDir = (argc > 1) ? argv[1] : ".";
+    std::vector<FileRecord> files;
+
+    if (!fs::exists(targetDir)) {
+        std::cerr << "Error: Target directory does not exist.\n";
+        return 1;
+    }
+
+    std::cout << "Scanning " << targetDir << "...\n";
+
+    auto options = fs::directory_options::skip_permission_denied;
+    
+    try {
+        for (auto it = fs::recursive_directory_iterator(targetDir, options); 
+             it != fs::recursive_directory_iterator(); 
+             ++it) {
+            try {
+                if (fs::is_regular_file(it->status())) {
+                    std::error_code ec;
+                    long long size = fs::file_size(it->path(), ec);
+                    
+                    if (!ec) {
+                        files.push_back({it->path(), size});
+                    }
+                }
+            } catch (const fs::filesystem_error&) {}
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Scan interrupted by system error: " << e.what() << "\n";
+    }
+
+    std::cout << "Found " << files.size() << " files.\n";
     return 0;
 }
