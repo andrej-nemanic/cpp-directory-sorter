@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <iomanip>
+#include <algorithm> // Added for std::swap
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -28,7 +29,30 @@ string formatSize(long long bytes) {
     return out.str();
 }
 
+int partition(std::vector<FileRecord>& arr, int low, int high) {
+    long long pivot = arr[high].size;
+    int i = (low - 1);
+
+    for (int j = low; j <= high - 1; j++) {
+        if (arr[j].size > pivot) {
+            i++;
+            std::swap(arr[i], arr[j]);
+        }
+    }
+    std::swap(arr[i + 1], arr[high]);
+    return (i + 1);
+}
+
+void quickSort(std::vector<FileRecord>& arr, int low, int high) {
+    if (low < high) {
+        int pi = partition(arr, low, high);
+        
+        quickSort(arr, low, pi - 1);
+        quickSort(arr, pi + 1, high);
+    }
+}
+
 int main(int argc, char* argv[]) {
-    std::cout << "File sort tool initialized.\n";
+    std::cout << "Algorithm branch: Quick Sort implemented.\n";
     return 0;
 }
