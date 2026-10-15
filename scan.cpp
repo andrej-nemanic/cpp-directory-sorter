@@ -6,7 +6,7 @@
 #include <iomanip>
 
 // Testni komentar za git diff
-
+// cherry-pick test
 using namespace std;
 namespace fs = std::filesystem;
 
