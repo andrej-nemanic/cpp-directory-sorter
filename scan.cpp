@@ -8,7 +8,7 @@
 // Testni komentar za git diff
 // cherry-pick test
 // Testni komentar za git stash
-
+// Testni komentar za git amend
 
 using namespace std;
 namespace fs = std::filesystem;
