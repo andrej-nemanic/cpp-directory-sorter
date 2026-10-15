@@ -10,8 +10,6 @@
 // Testni komentar za git stash
 // Testni komentar za git amend
 
-// Manjša sprememba za git revert.
-
 using namespace std;
 namespace fs = std::filesystem;
 
