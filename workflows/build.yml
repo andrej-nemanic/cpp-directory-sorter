@@ -1,13 +1,13 @@
-name: C/C++ CI
 on:
   push:
     branches: [ main ]
-  job:
-    build:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v2
-          with:
-            submodules: 'true'
-        - name: Prevedi kodo
-          run: g++ app/main.cpp utils/utils.cpp -o file-scanner
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'true'
+      - name: Prevedi kodo
+        run: g++ app/main.cpp utils/utils.cpp -o file-scanner
